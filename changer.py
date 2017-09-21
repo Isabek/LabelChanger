@@ -18,14 +18,19 @@ class Changer(object):
         xml_file_paths = reader.get_xml_files()
         object_mapper = ObjectMapper()
 
+        updated = 0
         for xml_file_path in xml_file_paths:
             annotation = object_mapper.bind(xml_file_path)
+            changed = False
             for obj in annotation["objects"]:
                 if obj["name"] == from_label:
                     obj["name"] = to_label
-            object_mapper.serialize(annotation, os.path.join(self.out_dir, os.path.basename(xml_file_path)))
-
-        print("%s file(s) updated" % len(xml_file_paths))
+                    changed = True
+            if changed:
+                object_mapper.serialize(annotation, os.path.join(self.out_dir, os.path.basename(xml_file_path)))
+                updated += 1
+                print("Updated file {}".format(xml_file_path))
+        print("{} file(s) updated".format(updated))
 
 
 def main():
