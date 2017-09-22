@@ -19,18 +19,30 @@ class Changer(object):
         object_mapper = ObjectMapper()
 
         updated = 0
+        error = 0
         for xml_file_path in xml_file_paths:
-            annotation = object_mapper.bind(xml_file_path)
+            try:
+                annotation = object_mapper.bind(xml_file_path)
+            except Exception as e:
+                error += 1
+                print("Error {} occurred during binding file {}".format(e, xml_file_path))
+                continue
+
             changed = False
             for obj in annotation["objects"]:
                 if obj["name"] == from_label:
                     obj["name"] = to_label
                     changed = True
             if changed:
-                object_mapper.serialize(annotation, os.path.join(self.out_dir, os.path.basename(xml_file_path)))
-                updated += 1
-                print("Updated file {}".format(xml_file_path))
+                try:
+                    object_mapper.serialize(annotation, os.path.join(self.out_dir, os.path.basename(xml_file_path)))
+                    updated += 1
+                    print("Updated file {}".format(xml_file_path))
+                except Exception as e:
+                    print(e)
+
         print("{} file(s) updated".format(updated))
+        print("{} file(s) {} wrong format".format(error, "has" if error <= 1 else "have"))
 
 
 def main():
